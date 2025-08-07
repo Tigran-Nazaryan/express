@@ -2,7 +2,6 @@ import express from 'express';
 import * as dotenv from 'dotenv';
 import router from "./controllers/routes/index.js";
 
-
 dotenv.config();
 
 const app = express()
@@ -14,4 +13,3 @@ app.use("/api", router);
 const server = app.listen(PORT, () => {
     console.log(`Server started on port ${PORT}`);
 })
-

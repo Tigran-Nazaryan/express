@@ -1,10 +1,13 @@
 import {Router} from "express";
-import {getPosts, getPostsById} from "../../posts/index.js";
+import {createPost, deletePost, getAllPosts, getPostById, updatePost} from "../../posts/index.js";
 
 
 const router = Router();
 
-router.get('/posts', getPosts);
-router.get('/posts/:id', getPostsById)
+router.post("/posts", createPost);
+router.get('/posts', getAllPosts);
+router.get('/posts/:id', getPostById);
+router.put("/posts/:id", updatePost);
+router.delete("/posts/:id", deletePost);
 
 export default router;

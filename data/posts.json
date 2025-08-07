@@ -1,13 +1,5 @@
 [
   {
-    "createdAt": "2025-07-30T23:12:38.056Z",
-    "author": "Desiree Hammes",
-    "avatar": "https://avatars.githubusercontent.com/u/4237739",
-    "title": "The Optional exuding function Salad offers reliable performance and breakable design",
-    "body": "Demo cena solum audentia cetera denique umquam depromo cibo deprecator. Sapiente tantillus avarus deorsum verecundia. Odio acerbitas fugiat conatus dicta pariatur.\nCultellus eligendi acceptus abbas suppellex ascit aequitas. Desipio voveo tribuo usitas amitto amitto. Laboriosam currus vehemens.\nTheatrum sequi volutabrum absum theologus adipisci bestia. Commodi balbus coepi denuncio candidus cernuus video. Absens undique molestiae ut tempora sint.",
-    "id": "1"
-  },
-  {
     "createdAt": "2025-07-30T13:25:06.781Z",
     "author": "Kyle Streich",
     "avatar": "https://avatars.githubusercontent.com/u/39882767",
@@ -118,5 +110,21 @@
     "title": "Schuster - Koelpin's most advanced Mouse technology increases tight capabilities",
     "body": "Color curo textus canonicus arbustum color. Ver vomica comburo triduana. Ambitus cotidie vitium tantum tumultus altus.\nNulla circumvenio pauper provident volup. Ultio abundans corroboro ceno vitae. Arcesso curso advoco quisquam ventito stillicidium sperno utpote sustineo tristis.\nCaelestis antepono termes suffragium dolor. Derelinquo concedo depono attollo reprehenderit commodo solvo verecundia. Molestiae deprimo ex custodia aro.",
     "id": "15"
+  },
+  {
+    "id": "24458d05-cfb4-4e51-b582-e19570e74ffb",
+    "title": "Новый пост",
+    "avatar": "url_аватарки",
+    "body": "Текст поста",
+    "author": "Автор",
+    "createdAt": "2025-08-07T12:03:31.368Z"
+  },
+  {
+    "id": "157528c0-2db3-49d7-8c98-f95c2097b3e5",
+    "title": "Обновленный заголовок",
+    "avatar": "url_аватарки",
+    "body": "Обновленный текст",
+    "author": "Автор",
+    "createdAt": "2025-08-07T12:09:25.325Z"
   }
 ]
