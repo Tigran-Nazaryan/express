@@ -1,73 +1,94 @@
-import * as postService from '../../services/postService.js';
+import db from '../../db/index.js';
 
 export const getAllPosts = async (req, res) => {
     try {
-        const posts = await postService.getAllPosts();
-        res.status(200).json({
-            message: 'Posts found successfully',
-            data: posts
-        });
+        const posts = await db.query(`SELECT * FROM person`);
+        res.json(posts.rows);
     } catch (error) {
         console.error(error);
         res.status(500).json({
-            message: error?.message || 'Something went wrong',
+            message: error?.message || 'Failed to retrieve posts',
         });
     }
 };
 
 export const getPostById = async (req, res) => {
-    const { id } = req.params;
     try {
-        const post = await postService.getPostById(id);
-        if (!post) {
-            return res.status(404).json({ message: "Post not found with id " + id });
+        const { id } = req.params;
+        const post = await db.query(`SELECT * FROM person WHERE id = $1`, [id]);
+
+        if (post.rows.length === 0) {
+            return res.status(404).json({ message: 'Person not found' });
         }
 
-        res.status(200).json({
-            message: 'Post found successfully',
-            data: post
-        });
+        res.json(post.rows[0]);
     } catch (error) {
         console.error(error);
         res.status(500).json({
-            message: error?.message || 'Something went wrong',
+            message: error?.message || 'Failed to retrieve person',
         });
     }
 };
 
 export const createPost = async (req, res) => {
     try {
-        const { title, avatar, body, author } = req.body;
-        if (!title || !body || !author) {
-            return res.status(400).json({ message: 'Missing required fields' });
-        }
+        const { name, surname } = req.body;
 
-        const newPost = await postService.createPost({ title, avatar, body, author });
-        res.status(201).json({ message: 'Post created', data: newPost });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
+        const newPost = await db.query(
+            `INSERT INTO person (name, surname) VALUES ($1, $2) RETURNING *`,
+            [name, surname]
+        );
+
+        res.status(201).json(newPost.rows[0]);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            message: error?.message || 'Failed to create person',
+        });
     }
 };
 
 export const updatePost = async (req, res) => {
     try {
-        const updated = await postService.updatePost(req.params.id, req.body);
-        if (!updated) return res.status(404).json({ message: 'Post not found' });
+        const { id } = req.params;
+        const { name, surname } = req.body;
 
-        res.status(200).json({ message: 'Post updated', data: updated });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
+        const post = await db.query(
+            `UPDATE person SET name = $1, surname = $2 WHERE id = $3 RETURNING *`,
+            [name, surname, id]
+        );
+
+        if (post.rows.length === 0) {
+            return res.status(404).json({ message: 'Person not found' });
+        }
+
+        res.json(post.rows[0]);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            message: error?.message || 'Failed to update person',
+        });
     }
 };
 
 export const deletePost = async (req, res) => {
     try {
-        const deleted = await postService.deletePost(req.params.id);
-        if (!deleted) return res.status(404).json({ message: 'Post not found' });
+        const { id } = req.params;
 
-        res.status(204).send(); // Успешно удалено, ничего не возвращаем
-    } catch (e) {
-        res.status(500).json({ error: e.message });
+        const post = await db.query(
+            `DELETE FROM person WHERE id = $1 RETURNING *`,
+            [id]
+        );
+
+        if (post.rows.length === 0) {
+            return res.status(404).json({ message: 'Person not found' });
+        }
+
+        res.status(200).json({ message: 'Person deleted', data: post.rows[0] });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            message: error?.message || 'Failed to delete person',
+        });
     }
 };
-
