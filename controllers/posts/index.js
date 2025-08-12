@@ -1,94 +1,74 @@
-import db from '../../db/index.js';
+import {postSchema} from "../validations/post.validation.js";
+import { User, Post } from "../../models/models.js";
 
 export const getAllPosts = async (req, res) => {
     try {
-        const posts = await db.query(`SELECT * FROM person`);
-        res.json(posts.rows);
+        const posts = await Post.findAll({
+            include: {
+                model: User,
+                as: "user",
+            }
+        });
+        return res.status(200).json(posts);
     } catch (error) {
         console.error(error);
-        res.status(500).json({
-            message: error?.message || 'Failed to retrieve posts',
-        });
+        res.status(500).json({ message: error.message || 'Failed to retrieve posts' });
     }
 };
 
 export const getPostById = async (req, res) => {
     try {
-        const { id } = req.params;
-        const post = await db.query(`SELECT * FROM person WHERE id = $1`, [id]);
+        const post = await Post.findByPk(req.params.id, {
+            include: User,
+            as: "user"
+        });
 
-        if (post.rows.length === 0) {
-            return res.status(404).json({ message: 'Person not found' });
-        }
-
-        res.json(post.rows[0]);
+        if (!post) return res.status(404).json({ message: 'Post not found' });
+        return res.status(200).json({ data: post });
     } catch (error) {
         console.error(error);
-        res.status(500).json({
-            message: error?.message || 'Failed to retrieve person',
-        });
+        res.status(500).json({ message: error.message || 'Failed to retrieve post' });
     }
 };
 
 export const createPost = async (req, res) => {
     try {
-        const { name, surname } = req.body;
+        const { error } = postSchema.validate(req.body);
+        if (error) return res.status(400).json({ error: error.details[0].message });
 
-        const newPost = await db.query(
-            `INSERT INTO person (name, surname) VALUES ($1, $2) RETURNING *`,
-            [name, surname]
-        );
-
-        res.status(201).json(newPost.rows[0]);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({
-            message: error?.message || 'Failed to create person',
-        });
+        const post = await Post.create(req.body);
+        return res.status(201).json(post);
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ message: e.message });
     }
 };
 
 export const updatePost = async (req, res) => {
+    const { error } = postSchema.validate(req.body);
+    if (error) return res.status(400).json({ error: error.details[0].message });
+
     try {
-        const { id } = req.params;
-        const { name, surname } = req.body;
+        const post = await Post.findByPk(req.params.id);
+        if (!post) return res.status(404).json({ message: 'Post not found' });
 
-        const post = await db.query(
-            `UPDATE person SET name = $1, surname = $2 WHERE id = $3 RETURNING *`,
-            [name, surname, id]
-        );
-
-        if (post.rows.length === 0) {
-            return res.status(404).json({ message: 'Person not found' });
-        }
-
-        res.json(post.rows[0]);
+        await post.update(req.body);
+        return res.status(200).json(post);
     } catch (error) {
         console.error(error);
-        res.status(500).json({
-            message: error?.message || 'Failed to update person',
-        });
+        res.status(500).json({ message: error.message || 'Failed to update post' });
     }
 };
 
 export const deletePost = async (req, res) => {
     try {
-        const { id } = req.params;
+        const post = await Post.findByPk(req.params.id);
+        if (!post) return res.status(404).json({ message: 'Post not found' });
 
-        const post = await db.query(
-            `DELETE FROM person WHERE id = $1 RETURNING *`,
-            [id]
-        );
-
-        if (post.rows.length === 0) {
-            return res.status(404).json({ message: 'Person not found' });
-        }
-
-        res.status(200).json({ message: 'Person deleted', data: post.rows[0] });
+        await post.destroy();
+        return res.status(200).json({ message: 'Post deleted successfully' });
     } catch (error) {
         console.error(error);
-        res.status(500).json({
-            message: error?.message || 'Failed to delete person',
-        });
+        res.status(500).json({ message: error.message || 'Failed to delete post' });
     }
 };

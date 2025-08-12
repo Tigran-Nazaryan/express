@@ -2,6 +2,7 @@ import express from 'express';
 import * as dotenv from 'dotenv';
 import cors from 'cors';
 import router from "./controllers/routes/index.js";
+import dbConnect from "./config/dbConnect.js";
 
 dotenv.config();
 
@@ -16,6 +17,18 @@ app.use(cors({
 app.use(express.json());
 app.use("/api", router);
 
-const server = app.listen(PORT, () => {
-    console.log(`Server started on port ${PORT}`);
-})
+const startServer = async () => {
+    try {
+        await dbConnect();
+        app.listen(PORT, () => {
+            console.log(`Server started on port ${PORT}`);
+        });
+    } catch (error) {
+        console.error('Error while starting server:', error);
+        process.exit(1);
+    }
+};
+
+startServer();
+
+

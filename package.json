@@ -5,7 +5,12 @@
   "main": "app.js",
   "scripts": {
     "dev": "nodemon app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "db:migrate:all": "npx sequelize-cli db:migrate",
+    "db:migrate:undo:all": "npx sequelize-cli db:migrate:undo",
+    "db:migrate:undo": "npx sequelize-cli db:migrate:undo --name <migration-name>",
+    "db:model:generate": "npx sequelize-cli model:generate --name <model-name> --attributes id:number",
+    "db:migration:generate": "npx sequelize-cli migration:generate --name <migration-name>"
   },
   "keywords": [],
   "author": "",
@@ -16,11 +21,14 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
+    "joi": "^18.0.0",
     "pg": "^8.16.3",
+    "sequelize": "^6.37.7",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "sequelize-cli": "^6.6.3"
   }
 }
