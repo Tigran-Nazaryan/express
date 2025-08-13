@@ -26,6 +26,8 @@ export default {
         allowNull: false,
         type: Sequelize.DATE
       }
+    }, {
+      timestamps: true
     });
   },
   async down(queryInterface, Sequelize) {

@@ -19,8 +19,10 @@ export const getAllPosts = async (req, res) => {
 export const getPostById = async (req, res) => {
     try {
         const post = await Post.findByPk(req.params.id, {
-            include: User,
-            as: "user"
+            include: {
+                model: User,
+                as: "user",
+            },
         });
 
         if (!post) return res.status(404).json({ message: 'Post not found' });
@@ -33,8 +35,21 @@ export const getPostById = async (req, res) => {
 
 export const createPost = async (req, res) => {
     try {
-        const { error } = postSchema.validate(req.body);
+        const { body } = req;
+        const { error } = postSchema.validate(body);
+
         if (error) return res.status(400).json({ error: error.details[0].message });
+
+        let user = await User.findByPk(body.userId);
+
+        if (!user) {
+            user = await User.create({
+                id: body.userId,
+                firstName: body.author || 'DefaultFirstName',
+                lastName: 'DefaultLastName',
+                email: `user${body.userId}@example.com`
+            });
+        }
 
         const post = await Post.create(req.body);
         return res.status(201).json(post);

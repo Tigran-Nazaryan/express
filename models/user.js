@@ -25,7 +25,7 @@ export default (sequelize, DataTypes) => {
         }
     }, {
         tableName: 'Users',
-        timestamps: false,
+        timestamps: true,
     });
 
     User.associate = (models) => {

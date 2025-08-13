@@ -9,11 +9,26 @@ export default (sequelize, DataTypes) => {
         title: {
             type: DataTypes.STRING
         },
+        avatar: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        author: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
         body: {
             type: DataTypes.TEXT
         },
         userId: {
-            type: DataTypes.INTEGER
+            type: DataTypes.INTEGER,
+            references: {
+                model: 'Users',
+                key: 'id',
+            },
+            onUpdate: 'CASCADE',
+            onDelete: 'SET NULL',
+            allowNull: true,
         },
     }, {
         tableName: 'Posts',
