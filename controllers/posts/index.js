@@ -1,4 +1,4 @@
-import {postSchema} from "../validations/post.validation.js";
+import {postSchema} from "../../validations/post.validation.js";
 import { User, Post } from "../../models/models.js";
 
 export const getAllPosts = async (req, res) => {
@@ -33,31 +33,69 @@ export const getPostById = async (req, res) => {
     }
 };
 
+// export const createPost = async (req, res) => {
+//     try {
+//         const { body } = req;
+//         const { error } = postSchema.validate(body);
+//
+//         if (error) return res.status(400).json({ error: error.details[0].message });
+//
+//         let user = await User.findByPk(body.userId);
+//
+//         if (!user) {
+//             user = await User.create({
+//                 id: body.userId,
+//                 firstName: body.author || 'DefaultFirstName',
+//                 lastName: 'DefaultLastName',
+//                 email: `user${body.userId}@example.com`
+//             });
+//         }
+//
+//         const post = await Post.create(req.body);
+//         return res.status(201).json(post);
+//     } catch (e) {
+//         console.error(e);
+//         res.status(500).json({ message: e.message });
+//     }
+// };
+
 export const createPost = async (req, res) => {
     try {
         const { body } = req;
         const { error } = postSchema.validate(body);
-
         if (error) return res.status(400).json({ error: error.details[0].message });
 
-        let user = await User.findByPk(body.userId);
+        const userId = Number(body.userId);
+
+        let user = await User.findByPk(userId);
 
         if (!user) {
             user = await User.create({
-                id: body.userId,
-                firstName: body.author || 'DefaultFirstName',
-                lastName: 'DefaultLastName',
-                email: `user${body.userId}@example.com`
+                firstName: body.user.firstName,
+                lastName: body.user.lastName,
+                email: body.user.email,
+                password: body.user.password
             });
         }
 
-        const post = await Post.create(req.body);
+        const author = `${user.firstName} ${user.lastName}`;
+
+        const post = await Post.create({
+            title: body.title,
+            body: body.body,
+            avatar: body.avatar,
+            author,
+            userId: user.id,
+        });
+
         return res.status(201).json(post);
     } catch (e) {
         console.error(e);
         res.status(500).json({ message: e.message });
     }
 };
+
+
 
 export const updatePost = async (req, res) => {
     const { error } = postSchema.validate(req.body);

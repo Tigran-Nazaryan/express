@@ -4,34 +4,44 @@ export default (sequelize, DataTypes) => {
             allowNull: false,
             autoIncrement: true,
             primaryKey: true,
-            type: DataTypes.INTEGER
+            type: DataTypes.INTEGER,
         },
         firstName: {
-            type: DataTypes.STRING
+            type: DataTypes.STRING,
         },
         lastName: {
-            type: DataTypes.STRING
+            type: DataTypes.STRING,
         },
         email: {
-            type: DataTypes.STRING
+            type: DataTypes.STRING,
+            allowNull: false,
+            unique: true,
+            validate: {
+                isEmail: true,
+            },
+        },
+        password: {
+            type: DataTypes.STRING,
+            allowNull: false,
         },
         createdAt: {
             allowNull: false,
-            type: DataTypes.DATE
+            type: DataTypes.DATE,
+            defaultValue: DataTypes.NOW,
         },
         updatedAt: {
             allowNull: false,
-            type: DataTypes.DATE
-        }
+            type: DataTypes.DATE,
+            defaultValue: DataTypes.NOW,
+        },
     }, {
         tableName: 'Users',
         timestamps: true,
     });
 
     User.associate = (models) => {
-        User.hasMany(models.Post, {foreignKey: 'userId', as: "posts"});
+        User.hasMany(models.Post, { foreignKey: 'userId', as: 'posts' });
     };
 
     return User;
 };
-

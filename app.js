@@ -1,34 +1,25 @@
 import express from 'express';
 import * as dotenv from 'dotenv';
 import cors from 'cors';
-import router from "./controllers/routes/index.js";
-import dbConnect from "./config/dbConnect.js";
+import router from "./routes/index.js";
+import cookieParser from "cookie-parser";
+import {corsOptions} from "./config/corsOptions.js";
+import startServer from "./utils/startServer.js";
+import {errorHandler} from "./middleware/errorHandler.js";
 
 dotenv.config();
 
-const app = express()
+const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors({
-    origin: 'http://localhost:3000',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-}));
+app.use(cors(corsOptions));
 
 app.use(express.json());
+app.use(cookieParser());
+app.use(errorHandler)
+
 app.use("/api", router);
 
-const startServer = async () => {
-    try {
-        await dbConnect();
-        app.listen(PORT, () => {
-            console.log(`Server started on port ${PORT}`);
-        });
-    } catch (error) {
-        console.error('Error while starting server:', error);
-        process.exit(1);
-    }
-};
-
-startServer();
+startServer(app, PORT);
 
 
