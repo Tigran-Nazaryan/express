@@ -1,5 +1,4 @@
 import userService from "../../service/user-service.js";
-import User from "../../models/user.js";
 
 export const registration = async (req, res, next) => {
     try {
@@ -32,7 +31,6 @@ export const login = async (req, res, next) => {
         next(e);
     }
 }
-
 
 export const refresh = async (req, res, next) => {
     try {

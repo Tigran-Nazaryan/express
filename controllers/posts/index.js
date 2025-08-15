@@ -33,32 +33,6 @@ export const getPostById = async (req, res) => {
     }
 };
 
-// export const createPost = async (req, res) => {
-//     try {
-//         const { body } = req;
-//         const { error } = postSchema.validate(body);
-//
-//         if (error) return res.status(400).json({ error: error.details[0].message });
-//
-//         let user = await User.findByPk(body.userId);
-//
-//         if (!user) {
-//             user = await User.create({
-//                 id: body.userId,
-//                 firstName: body.author || 'DefaultFirstName',
-//                 lastName: 'DefaultLastName',
-//                 email: `user${body.userId}@example.com`
-//             });
-//         }
-//
-//         const post = await Post.create(req.body);
-//         return res.status(201).json(post);
-//     } catch (e) {
-//         console.error(e);
-//         res.status(500).json({ message: e.message });
-//     }
-// };
-
 export const createPost = async (req, res) => {
     try {
         const { body } = req;
@@ -94,8 +68,6 @@ export const createPost = async (req, res) => {
         res.status(500).json({ message: e.message });
     }
 };
-
-
 
 export const updatePost = async (req, res) => {
     const { error } = postSchema.validate(req.body);
