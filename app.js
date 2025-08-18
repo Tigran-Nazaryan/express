@@ -16,9 +16,9 @@ app.use(cors(corsOptions));
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(errorHandler)
 
 app.use("/api", router);
+app.use(errorHandler)
 
 startServer(app, PORT);
 

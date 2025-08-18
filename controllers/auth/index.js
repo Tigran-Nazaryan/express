@@ -24,6 +24,7 @@ export const logout = async (req, res, next) => {
 export const login = async (req, res, next) => {
     try {
         const {email, password} = req.body;
+        console.log('Login request body:', req.body);
         const userData = await userService.login(email, password);
         res.cookie("refreshToken", userData.refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true});
         return res.json(userData);
@@ -43,11 +44,8 @@ export const refresh = async (req, res, next) => {
     }
 }
 
-export const getUsers = async (req, res, next) => {
-    try {
-        const users = await userService.getAllUsers();
-        return res.json(users)
-    } catch (e) {
-        next(e);
-    }
+export const verify = async (req, res, next) => {
+    return res.status(200).json({
+        message: "User verified."
+    })
 }
