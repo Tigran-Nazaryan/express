@@ -32,17 +32,25 @@ class UserService {
 
     async login(email, password) {
         const user = await User.findOne({
-            where: {email}
+            where: { email }
         });
+
         if (!user) {
             throw ApiError.BadRequestError("User with this email was not found.");
         }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        if (!isPasswordValid) {
+            throw ApiError.BadRequestError("Incorrect password.");
+        }
+
         const userDto = new UserDto(user);
-        const tokens = tokenService.generateTokens({...userDto});
+        const tokens = tokenService.generateTokens({ ...userDto });
 
         await tokenService.saveToken(userDto.id, tokens.refreshToken);
 
-        return {...tokens, user: userDto};
+        return { ...tokens, user: userDto };
     }
 
     async logout(refreshToken) {
@@ -68,11 +76,6 @@ class UserService {
         await tokenService.saveToken(userDto.id, tokens.refreshToken);
 
         return {...tokens, user: userDto};
-    }
-
-    async getAllUsers() {
-        const users = await User.findAll();
-        return users;
     }
 }
 

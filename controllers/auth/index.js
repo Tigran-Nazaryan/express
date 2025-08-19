@@ -44,7 +44,7 @@ export const refresh = async (req, res, next) => {
     }
 }
 
-export const verify = async (req, res, next) => {
+export const verify = async (req, res) => {
     return res.status(200).json({
         message: "User verified."
     })
