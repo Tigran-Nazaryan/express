@@ -1,6 +1,5 @@
 import ApiError from "../exceptions/api-error.js";
 import tokenService from "../service/token-service.js";
-import { User } from "../models/models.js";
 
 export default async (req, res, next) => {
     try {
