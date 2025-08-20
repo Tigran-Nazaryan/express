@@ -1,5 +1,20 @@
 import { Post, User } from "../models/models.js";
 
+const findPostOrThrow = async (id) => {
+    const post = await Post.findByPk(id, {
+        include: {
+            model: User,
+            as: "user",
+        },
+    });
+
+    if (!post) {
+        throw new Error("Post not found");
+    }
+
+    return post;
+};
+
 const getPosts = async () => {
     return await Post.findAll({
         include: {
@@ -10,31 +25,25 @@ const getPosts = async () => {
 };
 
 const getPostById = async (id) => {
-    const post = await Post.findByPk(id, {
-        include: {
-            model: User,
-            as: "user",
-        },
-    });
-
-    if (!post) {
-        throw new Error('Post not found');
-    }
-
-    return post;
+    return await findPostOrThrow(id);
 };
 
 const createPost = async (body) => {
     const userId = Number(body.userId);
 
     let user = await User.findByPk(userId);
-    if (!user) {
+
+    if (!user && body.user) {
         user = await User.create({
             firstName: body.user.firstName,
             lastName: body.user.lastName,
             email: body.user.email,
             password: body.user.password
         });
+    }
+
+    if (!user) {
+        throw new Error("User not found or no user data provided");
     }
 
     const author = `${user.firstName} ${user.lastName}`;
@@ -49,19 +58,15 @@ const createPost = async (body) => {
 };
 
 const updatePost = async (id, updateData) => {
-    const post = await Post.findByPk(id);
-    if (!post) throw new Error('Post not found');
-
+    const post = await findPostOrThrow(id);
     await post.update(updateData);
     return post;
 };
 
 const deletePost = async (id) => {
-    const post = await Post.findByPk(id);
-    if (!post) throw new Error('Post not found');
-
+    const post = await findPostOrThrow(id);
     await post.destroy();
-    return { message: 'Post deleted successfully' };
+    return { message: "Post deleted successfully" };
 };
 
 export default {

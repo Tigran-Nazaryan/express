@@ -5,5 +5,4 @@ export const postSchema = Joi.object({
     title: Joi.string().min(3).required(),
     body: Joi.string().required(),
     avatar: Joi.string().uri().optional(),
-    userId: Joi.number().integer().required(),
 });

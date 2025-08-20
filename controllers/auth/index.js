@@ -1,9 +1,9 @@
-import userService from "../../service/user-service.js";
+import AuthService from "../../service/auth.service.js";
 
 export const registration = async (req, res, next) => {
     try {
         const {email, password, firstName, lastName} = req.body;
-        const userData = await userService.registration(email, password, firstName, lastName);
+        const userData = await AuthService.registration(email, password, firstName, lastName);
         return res.json(userData);
     } catch (e) {
         next(e);
@@ -13,7 +13,7 @@ export const registration = async (req, res, next) => {
 export const logout = async (req, res, next) => {
     try {
         const {refreshToken} = req.cookies;
-        const token = await userService.logout(refreshToken);
+        const token = await AuthService.logout(refreshToken);
         res.clearCookie('refreshToken');
         return res.json(token);
     } catch (e) {
@@ -25,7 +25,7 @@ export const login = async (req, res, next) => {
     try {
         const {email, password} = req.body;
         console.log('Login request body:', req.body);
-        const userData = await userService.login(email, password);
+        const userData = await AuthService.login(email, password);
         res.cookie("refreshToken", userData.refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true});
         return res.json(userData);
     } catch (e) {
@@ -36,7 +36,7 @@ export const login = async (req, res, next) => {
 export const refresh = async (req, res, next) => {
     try {
         const refreshToken = req.cookies;
-        const userData = await userService.refresh(refreshToken);
+        const userData = await AuthService.refresh(refreshToken);
         res.cookie("refreshToken", userData.refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true});
         return res.json(userData);
     } catch (e) {

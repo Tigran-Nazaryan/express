@@ -1,15 +1,15 @@
 import ApiError from "../exceptions/api-error.js";
 import tokenService from "../service/token-service.js";
+import { User } from "../models/models.js";
 
 export default async (req, res, next) => {
     try {
         const authorizationHeader = req.headers.authorization;
-        console.log(
-            'authorizationHeader', authorizationHeader
-        )
+
         if(!authorizationHeader) {
             return next(ApiError.UnauthorizedError())
         }
+
         const accessToken = authorizationHeader.split(' ')[1];
         if(!accessToken) {
             return next(ApiError.UnauthorizedError())

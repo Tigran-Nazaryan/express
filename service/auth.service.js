@@ -5,7 +5,7 @@ import {registrationSchema} from "../validations/registration.validation.js";
 import tokenService from "./token-service.js";
 import ApiError from "../exceptions/api-error.js";
 
-class UserService {
+class AuthService {
     async registration(email, password, firstName, lastName) {
 
         const {error} = registrationSchema.validate({email, password, firstName, lastName});
@@ -46,7 +46,9 @@ class UserService {
         }
 
         const userDto = new UserDto(user);
-        const tokens = tokenService.generateTokens({ ...userDto });
+        const { id } = userDto;
+
+        const tokens = tokenService.generateTokens({ id });
 
         await tokenService.saveToken(userDto.id, tokens.refreshToken);
 
@@ -62,13 +64,16 @@ class UserService {
         if(!refreshToken) {
             throw ApiError.UnauthorizedError()
         }
+
         const userData = tokenService.validateRefreshToken(refreshToken);
         const tokenFroMdB = await User.findToken({
             where: {refreshToken}
-        })
+        });
+
         if (!userData || !tokenFroMdB) {
             throw ApiError.UnauthorizedError()
         }
+
         const user = await User.findByPk(userData.id);
         const userDto = new UserDto(user);
         const tokens = tokenService.generateTokens({...userDto});
@@ -79,4 +84,4 @@ class UserService {
     }
 }
 
-export default new UserService();
+export default new AuthService();

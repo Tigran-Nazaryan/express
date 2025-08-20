@@ -21,8 +21,12 @@ export const getPostById = async (req, res) => {
 
 export const createPost = async (req, res) => {
     try {
-        const { error } = postSchema.validate(req.body);
+        const { body, user } = req;
+
+        const { error } = postSchema.validate(body);
         if (error) return res.status(400).json({ error: error.details[0].message });
+
+        body.userId = user.id;
 
         const post = await postService.createPost(req.body);
         return res.status(201).json(post);
@@ -51,4 +55,3 @@ export const deletePost = async (req, res) => {
         res.status(error.message === 'Post not found' ? 404 : 500).json({ message: error.message });
     }
 };
-

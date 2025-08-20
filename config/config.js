@@ -6,7 +6,7 @@ const config = {
         "password": dbConfig.password,
         "database": dbConfig.database,
         "host": dbConfig.host,
-        "dialect": dbConfig.dialect
+        "dialect": dbConfig.dialect,
     },
     "test": {
         "username": "root",
