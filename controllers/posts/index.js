@@ -3,7 +3,7 @@ import postService from "../../service/post-service.js";
 
 export const getAllPosts = async (req, res) => {
     try {
-        const posts = await postService.getPosts();
+        const posts = await postService.getPosts(req.user.id);
         return res.status(200).json(posts);
     } catch (error) {
         res.status(500).json({ message: error.message || 'Failed to retrieve posts' });

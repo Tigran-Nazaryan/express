@@ -1,11 +1,11 @@
-import { Follows } from '../models/models.js';
+import {Follow, User, Post} from '../models/models.js';
 
 export async function createFollow(followerId, followingId) {
     if (followerId === followingId) {
         throw new Error(`You can't subscribe to yourself`);
     }
 
-    const [follow, created] = await Follows.findOrCreate({
+    const [follow, created] = await Follow.findOrCreate({
         where: { followerId, followingId },
     });
 
@@ -17,7 +17,7 @@ export async function createFollow(followerId, followingId) {
 }
 
 export async function deleteFollow(followerId, followingId) {
-    const deletedCount = await Follows.destroy({
+    const deletedCount = await Follow.destroy({
         where: { followerId, followingId }
     });
 
@@ -27,3 +27,38 @@ export async function deleteFollow(followerId, followingId) {
 
     return true;
 }
+
+export async function getFollowedUsersPosts(followerId) {
+    const follows = await Follow.findAll({
+        where: { followerId },
+        attributes: ['followingId'],
+    });
+
+    const followingIds = follows.map(f => f.followingId);
+
+    if (followingIds.length === 0) {
+        return [];
+    }
+
+    const posts = await Post.findAll({
+        where: {
+            userId: followingIds,
+        },
+        include: [{
+            model: User,
+            as: 'user',
+            attributes: ['id', 'firstName', 'lastName'],
+        }],
+    });
+
+    return posts;
+}
+
+export async function checkIfFollowing(followerId, followingId) {
+    const follow = await Follow.findOne({
+        where: { followerId, followingId },
+    });
+
+    return !!follow;
+}
+

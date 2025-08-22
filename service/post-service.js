@@ -1,4 +1,4 @@
-import { Post, User } from "../models/models.js";
+import {Follow, Post, User} from "../models/models.js";
 
 const findPostOrThrow = async (id) => {
     const post = await Post.findByPk(id, {
@@ -15,13 +15,30 @@ const findPostOrThrow = async (id) => {
     return post;
 };
 
-const getPosts = async () => {
-    return await Post.findAll({
+const getPosts = async (userId) => {
+    let posts = await Post.findAll({
         include: {
             model: User,
             as: "user"
         }
     });
+
+    const user = await User.findByPk(userId, {
+        attributes: ["id"],
+        include: {
+            model: User,
+            as: "Following"
+        }
+    });
+
+    const userFollowingIds = user.Following.map(f => f.id);
+    
+    posts = posts.map(post => {
+        post.user.dataValues.isFollowing = userFollowingIds.includes(post.user.id);
+        return post;
+    });
+
+    return posts;
 };
 
 const getPostById = async (id) => {
