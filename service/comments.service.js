@@ -1,10 +1,17 @@
 import { Comment, User } from "../models/models.js";
 
 export const createComment = async ({ postId, userId, content }) => {
-    return await Comment.create({
+    const comment = await Comment.create({
         postId,
         userId,
         content,
+    });
+    return await Comment.findByPk(comment.id, {
+        include: {
+            model: User,
+            as: 'user',
+            attributes: ['id', 'firstName', 'lastName'],
+        },
     });
 };
 
@@ -14,7 +21,7 @@ export const getCommentsByPost = async (postId) => {
         include: {
             model: User,
             as: 'user',
-            attributes: ['id'],
+            attributes: ['id', 'firstName', 'lastName'],
         },
         order: [['createdAt', 'ASC']],
     });

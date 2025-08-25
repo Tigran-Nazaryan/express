@@ -12,6 +12,6 @@ router.use("/auth", authRouter);
 router.use("/posts", authMiddleware, postsRouter);
 router.use("/authors", authMiddleware, authorRouter);
 router.use("/follows", authMiddleware, followsRouter)
-router.use("/comments", commentsRouter )
+router.use("/comments", authMiddleware, commentsRouter )
 
 export default router;
