@@ -51,7 +51,12 @@ export async function getFollowedUsersPosts(followerId) {
         }],
     });
 
-    return posts;
+    const postsWithIsFollowing = posts.map(post => {
+        post.user.dataValues.isFollowing = true;
+        return post;
+    });
+
+    return postsWithIsFollowing;
 }
 
 export async function checkIfFollowing(followerId, followingId) {

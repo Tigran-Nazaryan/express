@@ -1,4 +1,4 @@
-import {Follow, Post, User} from "../models/models.js";
+import { Post, User} from "../models/models.js";
 
 const findPostOrThrow = async (id) => {
     const post = await Post.findByPk(id, {
