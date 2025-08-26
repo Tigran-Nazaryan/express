@@ -1,4 +1,5 @@
 import AuthService from "../../service/auth.service.js";
+import {User} from "../../models/models.js";
 
 export const registration = async (req, res, next) => {
     try {
@@ -45,7 +46,13 @@ export const refresh = async (req, res, next) => {
 }
 
 export const verify = async (req, res) => {
-    return res.status(200).json({
-        message: "User verified."
-    })
+    try {
+        const user = await User.findByPk(req.user.id, { attributes: ['id'] });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        res.json({ user });
+    } catch (err) {
+        res.status(500).json({ error: 'Server error' });
+    }
 }

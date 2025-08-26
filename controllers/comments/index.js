@@ -24,3 +24,19 @@ export const getCommentsByPost = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+export const getPostsWithComments = async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        if(!userId) {
+            return res.status(400).json({error: 'userId is required'});
+        }
+
+        const posts = await commentService.getPostsWithComments(userId);
+        res.status(200).json(posts);
+    } catch (err) {
+        console.error("Error fetching posts with comments:", err);
+        res.status(500).json({ error: "Server error" });
+    }
+};

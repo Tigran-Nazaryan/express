@@ -91,5 +91,5 @@ export default {
     getPostById,
     createPost,
     updatePost,
-    deletePost
+    deletePost,
 };

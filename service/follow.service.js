@@ -1,4 +1,4 @@
-import {Follow, User, Post} from '../models/models.js';
+import {Follow, User, Post, Comment} from '../models/models.js';
 
 export async function createFollow(followerId, followingId) {
     if (followerId === followingId) {
@@ -44,11 +44,24 @@ export async function getFollowedUsersPosts(followerId) {
         where: {
             userId: followingIds,
         },
-        include: [{
-            model: User,
-            as: 'user',
-            attributes: ['id', 'firstName', 'lastName'],
-        }],
+        include: [
+            {
+                model: User,
+                as: 'user',
+                attributes: ['id', 'firstName', 'lastName'],
+            },
+            {
+                model: Comment,
+                as: 'comments',
+                include: [
+                    {
+                        model: User,
+                        as: 'user',
+                        attributes: ['id', 'firstName', 'lastName'],
+                    },
+                ],
+            },
+        ],
     });
 
     const postsWithIsFollowing = posts.map(post => {
@@ -58,6 +71,7 @@ export async function getFollowedUsersPosts(followerId) {
 
     return postsWithIsFollowing;
 }
+
 
 export async function checkIfFollowing(followerId, followingId) {
     const follow = await Follow.findOne({
