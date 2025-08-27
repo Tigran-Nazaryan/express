@@ -1,7 +1,7 @@
 import {User, Post, Comment} from "../models/models.js";
 
-export const getAuthorWithPosts = async (userId) => {
-    return await User.findByPk(userId, {
+export const getAuthorWithPosts = async (userId, currentUserId) => {
+    const author = await User.findByPk(userId, {
         include: [
             {
                 model: Post,
@@ -36,4 +36,26 @@ export const getAuthorWithPosts = async (userId) => {
             exclude: ["password"]
         }
     });
+
+    if (!author) return null;
+
+    if (!currentUserId) {
+        author.dataValues.isFollowing = false;
+        return author;
+    }
+
+    const currentUser = await User.findByPk(currentUserId, {
+        include: [{
+            model: User,
+            as: 'Following',
+            attributes: ['id']
+        }],
+        attributes: ['id']
+    });
+
+    const followingIds = currentUser?.Following.map(f => f.id) || [];
+
+    author.dataValues.isFollowing = followingIds.includes(Number(userId));
+
+    return author;
 };
