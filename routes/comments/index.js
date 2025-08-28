@@ -1,5 +1,11 @@
 import {Router} from "express";
-import {createComment, getCommentsByPost, getPostsWithComments} from "../../controllers/comments/index.js";
+import {
+    createComment,
+    getCommentsByPost,
+    getPostsWithComments,
+    likeComment,
+    unlikeComment
+} from "../../controllers/comments/index.js";
 
 const router = Router();
 

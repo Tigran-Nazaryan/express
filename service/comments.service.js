@@ -1,6 +1,6 @@
-import { Comment, User, Post } from "../models/models.js";
+import {Comment, User, Post, CommentLike} from "../models/models.js";
 
-export const createComment = async ({ postId, userId, content }) => {
+export const createComment = async ({postId, userId, content}) => {
     const comment = await Comment.create({
         postId,
         userId,
@@ -17,7 +17,7 @@ export const createComment = async ({ postId, userId, content }) => {
 
 export const getCommentsByPost = async (postId) => {
     return await Comment.findAll({
-        where: { postId },
+        where: {postId},
         include: {
             model: User,
             as: 'user',
@@ -26,28 +26,6 @@ export const getCommentsByPost = async (postId) => {
         order: [['createdAt', 'ASC']],
     });
 };
-
-// export const getPostsWithComments = async () => Post.findAll({
-//     include: [
-//         {
-//             model: User,
-//             as: 'user',
-//             attributes: ['id', 'firstName', 'lastName'],
-//         },
-//         {
-//             model: Comment,
-//             as: 'comments',
-//             include: [
-//                 {
-//                     model: User,
-//                     as: 'user',
-//                     attributes: ['id', 'firstName', 'lastName'],
-//                 },
-//             ],
-//         },
-//     ],
-//
-// });
 
 export const getPostsWithComments = async (userId) => {
     const posts = await Post.findAll({
@@ -85,4 +63,30 @@ export const getPostsWithComments = async (userId) => {
         jsonPost.user.isFollowing = followingIds.includes(post.userId);
         return jsonPost;
     });
+};
+
+export const commentLike = async (userId, commentId) => {
+    // Проверяем, есть ли уже лайк от этого пользователя на этот комментарий
+    const existingLike = await CommentLike.findOne({
+        where: {userId, commentId},
+    });
+
+    if (existingLike) {
+        throw new Error("You have already liked this comment");
+    }
+
+    return await CommentLike.create({userId, commentId});
+};
+
+export const commentUnlike = async (userId, commentId) => {
+    const like = await CommentLike.findOne({
+        where: {userId, commentId},
+    });
+
+    if (!like) {
+        throw new Error("Like not found");
+    }
+
+    await like.destroy();
+    return {message: "Comment like removed"};
 };
