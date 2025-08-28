@@ -43,6 +43,9 @@ export default (sequelize, DataTypes) => {
         User.hasMany(models.Post, { foreignKey: 'userId', as: 'posts' });
         User.hasMany(models.Comment, { foreignKey: 'userId', as: 'comments' });
 
+        User.hasMany(models.PostLike, { foreignKey: 'userId', as: 'postLikes' });
+        User.hasMany(models.CommentLike, { foreignKey: 'userId', as: 'commentLikes' });
+
         User.belongsToMany(models.User, {
             through: models.Follow,
             as: 'Following',
