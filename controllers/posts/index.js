@@ -55,3 +55,28 @@ export const deletePost = async (req, res) => {
         res.status(error.message === 'Post not found' ? 404 : 500).json({ message: error.message });
     }
 };
+
+export const likePost = async (req, res) => {
+    try {
+        const postId = req.params.postId;
+        const userId = req.user.id;
+
+        const like = await postService.likePost(postId, userId);
+        return res.status(201).json(like);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+}
+
+export const unlikePost = async (req, res) => {
+    try {
+        const postId = req.params.postId;
+        const userId = req.user.id;
+
+        const result = await postService.unLikePost(postId, userId);
+
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};

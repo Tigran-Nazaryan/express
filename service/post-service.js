@@ -1,4 +1,5 @@
-import { Post, User} from "../models/models.js";
+import {Post, User, PostLike} from "../models/models.js";
+import {Model as Like} from "sequelize";
 
 const findPostOrThrow = async (id) => {
     const post = await Post.findByPk(id, {
@@ -32,7 +33,7 @@ const getPosts = async (userId) => {
     });
 
     const userFollowingIds = user.Following.map(f => f.id);
-    
+
     posts = posts.map(post => {
         post.user.dataValues.isFollowing = userFollowingIds.includes(post.user.id);
         return post;
@@ -83,8 +84,37 @@ const updatePost = async (id, updateData) => {
 const deletePost = async (id) => {
     const post = await findPostOrThrow(id);
     await post.destroy();
-    return { message: "Post deleted successfully" };
+    return {message: "Post deleted successfully"};
 };
+
+const likePost = async (postId, userId) => {
+    const posts = await Post.findByPk(postId);
+    if (!posts) {
+        throw new Error("Post not found");
+    }
+
+    const existingLike = await PostLike.findOne({
+        where: {postId, userId}
+    });
+    if (!existingLike) {
+        throw new Error("Post already liked by this user");
+    }
+
+    const like = await PostLike.create({postId, userId});
+    return like;
+}
+
+const unLikePost = async (postId, userId) => {
+    const like = await PostLike.findOne({
+        where: {postId, userId}
+    });
+
+    if (!like) {
+        throw new Error("Like not found");
+    }
+    await Like.destroy();
+    return {message: "Like removed"};
+}
 
 export default {
     getPosts,
@@ -92,4 +122,6 @@ export default {
     createPost,
     updatePost,
     deletePost,
+    likePost,
+    unLikePost
 };

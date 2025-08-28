@@ -7,5 +7,8 @@ router.post('/comments', createComment);
 router.get('/posts/:postId/comments', getCommentsByPost);
 router.get("/postsWithComments", getPostsWithComments);
 
+router.post('/comments/:commentId/like', likeComment);
+router.delete('/comments/:commentId/like', unlikeComment);
+
 
 export default router;

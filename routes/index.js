@@ -11,7 +11,7 @@ const router = Router();
 router.use("/auth", authRouter);
 router.use("/posts", authMiddleware, postsRouter);
 router.use("/authors", authMiddleware, authorRouter);
-router.use("/follows", authMiddleware, followsRouter)
-router.use("/comments", authMiddleware, commentsRouter )
+router.use("/follows", authMiddleware, followsRouter);
+router.use("/comments", authMiddleware, commentsRouter);
 
 export default router;
