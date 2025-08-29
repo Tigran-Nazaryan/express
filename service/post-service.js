@@ -15,58 +15,6 @@ const findPostOrThrow = async (id) => {
     return post;
 };
 
-// export const getPosts = async (userId) => {
-//     const posts = await Post.findAll({
-//         include: [
-//             {
-//                 model: User,
-//                 as: 'user',
-//                 attributes: ['id', 'firstName', 'lastName'],
-//             },
-//             {
-//                 model: Comment,
-//                 as: 'comments',
-//                 include: [
-//                     {
-//                         model: User,
-//                         as: 'user',
-//                         attributes: ['id', 'firstName', 'lastName'],
-//                     },
-//                 ],
-//             },
-//             {
-//                 model: PostLike,
-//                 as: 'likes',
-//                 attributes: ['userId'],
-//             }
-//         ],
-//     });
-//
-//     const user = await User.findByPk(userId, {
-//         include: {
-//             model: User,
-//             as: 'Following',
-//             attributes: ['id']
-//         },
-//     });
-//
-//     const followingIds = user.Following.map(f => f.id);
-//
-//     return posts.map(post => {
-//         const jsonPost = post.toJSON();
-//
-//         const likeUserIds = jsonPost.likes.map(like => like.userId);
-//
-//         jsonPost.user.isFollowing = followingIds.includes(post.userId);
-//         jsonPost.likesCount = likeUserIds.length;
-//         jsonPost.isLiked = likeUserIds.includes(userId);
-//
-//         delete jsonPost.likes;
-//
-//         return jsonPost;
-//     });
-// };
-
 export const getPosts = async (userId) => {
     const posts = await Post.findAll({
         include: [
@@ -99,7 +47,6 @@ export const getPosts = async (userId) => {
         ],
     });
 
-    // Получаем подписки текущего пользователя
     const user = await User.findByPk(userId, {
         include: {
             model: User,
@@ -134,7 +81,6 @@ export const getPosts = async (userId) => {
         return jsonPost;
     });
 };
-
 
 const getPostById = async (id) => {
     return await findPostOrThrow(id);

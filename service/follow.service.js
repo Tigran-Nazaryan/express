@@ -100,7 +100,6 @@ export async function getFollowedUsersPosts(followerId) {
     });
 }
 
-
 export async function checkIfFollowing(followerId, followingId) {
     const follow = await Follow.findOne({
         where: { followerId, followingId },
@@ -108,4 +107,3 @@ export async function checkIfFollowing(followerId, followingId) {
 
     return !!follow;
 }
-
