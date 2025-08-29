@@ -1,4 +1,4 @@
-import {Follow, User, Post, Comment} from '../models/models.js';
+import {Comment, Follow, Post, PostLike, User} from '../models/models.js';
 
 export async function createFollow(followerId, followingId) {
     if (followerId === followingId) {
@@ -61,17 +61,29 @@ export async function getFollowedUsersPosts(followerId) {
                     },
                 ],
             },
+            {
+                model: PostLike,
+                as: 'likes',
+                attributes: ['userId'],
+            }
         ],
     });
 
-    const postsWithIsFollowing = posts.map(post => {
-        post.user.dataValues.isFollowing = true;
-        return post;
+    return posts.map(post => {
+        const jsonPost = post.toJSON();
+
+        const likeUserIds = jsonPost.likes.map(like => like.userId);
+
+        jsonPost.likesCount = likeUserIds.length;
+        jsonPost.isLiked = likeUserIds.includes(followerId);
+
+        delete jsonPost.likes;
+
+        jsonPost.user.isFollowing = true;
+
+        return jsonPost;
     });
-
-    return postsWithIsFollowing;
 }
-
 
 export async function checkIfFollowing(followerId, followingId) {
     const follow = await Follow.findOne({

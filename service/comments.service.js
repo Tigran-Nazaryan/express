@@ -1,4 +1,4 @@
-import {Comment, User, Post, CommentLike} from "../models/models.js";
+import {Comment, User, Post, CommentLike, PostLike} from "../models/models.js";
 
 export const createComment = async ({postId, userId, content}) => {
     const comment = await Comment.create({
@@ -27,46 +27,7 @@ export const getCommentsByPost = async (postId) => {
     });
 };
 
-export const getPostsWithComments = async (userId) => {
-    const posts = await Post.findAll({
-        include: [
-            {
-                model: User,
-                as: 'user',
-                attributes: ['id', 'firstName', 'lastName'],
-            },
-            {
-                model: Comment,
-                as: 'comments',
-                include: [
-                    {
-                        model: User,
-                        as: 'user',
-                        attributes: ['id', 'firstName', 'lastName'],
-                    },
-                ],
-            },
-        ],
-    });
-
-    const user = await User.findByPk(userId, {
-        include: {
-            model: User,
-            as: 'Following',
-        },
-    });
-
-    const followingIds = user.Following.map(f => f.id);
-
-    return posts.map(post => {
-        const jsonPost = post.toJSON();
-        jsonPost.user.isFollowing = followingIds.includes(post.userId);
-        return jsonPost;
-    });
-};
-
 export const commentLike = async (userId, commentId) => {
-    // Проверяем, есть ли уже лайк от этого пользователя на этот комментарий
     const existingLike = await CommentLike.findOne({
         where: {userId, commentId},
     });

@@ -3,10 +3,17 @@ import postService from "../../service/post-service.js";
 
 export const getAllPosts = async (req, res) => {
     try {
-        const posts = await postService.getPosts(req.user.id);
-        return res.status(200).json(posts);
-    } catch (error) {
-        res.status(500).json({ message: error.message || 'Failed to retrieve posts' });
+        const userId = req.user.id;
+
+        if (!userId) {
+            return res.status(400).json({error: 'userId is required'});
+        }
+
+        const posts = await postService.getPosts(userId);
+        res.status(200).json(posts);
+    } catch (err) {
+        console.error("Error fetching posts with comments:", err);
+        res.status(500).json({error: "Server error"});
     }
 };
 
@@ -64,7 +71,8 @@ export const likePost = async (req, res) => {
         const like = await postService.likePost(postId, userId);
         return res.status(201).json(like);
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        const status = error.message.includes("already liked") ? 409 : 400
+        res.status(status).json({ message: error.message });
     }
 }
 
@@ -77,6 +85,7 @@ export const unlikePost = async (req, res) => {
 
         res.status(200).json(result);
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        const status = error.message.includes("not found") ? 404 : 400;
+        res.status(status).json({ message: error.message });
     }
 };

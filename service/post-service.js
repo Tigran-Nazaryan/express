@@ -1,5 +1,4 @@
-import {Post, User, PostLike} from "../models/models.js";
-import {Model as Like} from "sequelize";
+import {Post, User, PostLike, Comment} from "../models/models.js";
 
 const findPostOrThrow = async (id) => {
     const post = await Post.findByPk(id, {
@@ -16,31 +15,58 @@ const findPostOrThrow = async (id) => {
     return post;
 };
 
-const getPosts = async (userId) => {
-    let posts = await Post.findAll({
-        include: {
-            model: User,
-            as: "user"
-        }
+export const getPosts = async (userId) => {
+    const posts = await Post.findAll({
+        include: [
+            {
+                model: User,
+                as: 'user',
+                attributes: ['id', 'firstName', 'lastName'],
+            },
+            {
+                model: Comment,
+                as: 'comments',
+                include: [
+                    {
+                        model: User,
+                        as: 'user',
+                        attributes: ['id', 'firstName', 'lastName'],
+                    },
+                ],
+            },
+            {
+                model: PostLike,
+                as: 'likes',
+                attributes: ['userId'],
+            }
+        ],
     });
 
     const user = await User.findByPk(userId, {
-        attributes: ["id"],
         include: {
             model: User,
-            as: "Following"
-        }
+            as: 'Following',
+            attributes: ['id']
+        },
     });
 
-    const userFollowingIds = user.Following.map(f => f.id);
+    const followingIds = user.Following.map(f => f.id);
 
-    posts = posts.map(post => {
-        post.user.dataValues.isFollowing = userFollowingIds.includes(post.user.id);
-        return post;
+    return posts.map(post => {
+        const jsonPost = post.toJSON();
+
+        const likeUserIds = jsonPost.likes.map(like => like.userId);
+
+        jsonPost.user.isFollowing = followingIds.includes(post.userId);
+        jsonPost.likesCount = likeUserIds.length;
+        jsonPost.isLiked = likeUserIds.includes(userId);
+
+        delete jsonPost.likes;
+
+        return jsonPost;
     });
-
-    return posts;
 };
+
 
 const getPostById = async (id) => {
     return await findPostOrThrow(id);
@@ -96,7 +122,7 @@ const likePost = async (postId, userId) => {
     const existingLike = await PostLike.findOne({
         where: {postId, userId}
     });
-    if (!existingLike) {
+    if (existingLike) {
         throw new Error("Post already liked by this user");
     }
 
@@ -112,7 +138,9 @@ const unLikePost = async (postId, userId) => {
     if (!like) {
         throw new Error("Like not found");
     }
-    await Like.destroy();
+
+    await like.destroy();
+
     return {message: "Like removed"};
 }
 

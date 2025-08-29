@@ -10,10 +10,9 @@ export const getAuthorById = async (req, res) => {
             return res.status(404).json({ error: "No author with this id" });
         }
 
-        res.json(author);
-
+        return res.json(author);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: "Server error" });
+        return res.status(500).json({ error: err?.message || "Server error" });
     }
 };
