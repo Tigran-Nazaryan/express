@@ -15,8 +15,8 @@ const findPostOrThrow = async (id) => {
     return post;
 };
 
-export const getPosts = async (userId) => {
-    const posts = await Post.findAll({
+export const getPosts = async (userId, search = '') => {
+    const allPosts = await Post.findAll({
         include: [
             {
                 model: User,
@@ -57,7 +57,24 @@ export const getPosts = async (userId) => {
 
     const followingIds = user.Following.map(f => f.id);
 
-    return posts.map(post => {
+    const filteredPosts = search
+        ? allPosts.filter(post => {
+            const title = post.title || '';
+            const body = post.body || '';
+            const firstName = post.user?.firstName || '';
+            const lastName = post.user?.lastName || '';
+            const fullName = `${firstName} ${lastName}`.toLowerCase();
+            const lowerSearch = search.toLowerCase();
+
+            return (
+                title.toLowerCase().includes(lowerSearch) ||
+                body.toLowerCase().includes(lowerSearch) ||
+                fullName.includes(lowerSearch)
+            );
+        })
+        : allPosts;
+
+    return filteredPosts.map(post => {
         const jsonPost = post.toJSON();
 
         const postLikeUserIds = jsonPost.likes.map(like => like.userId);
