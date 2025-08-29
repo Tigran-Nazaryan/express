@@ -1,4 +1,4 @@
-import {Post, User, PostLike, Comment} from "../models/models.js";
+import {Post, User, PostLike, Comment, CommentLike} from "../models/models.js";
 
 const findPostOrThrow = async (id) => {
     const post = await Post.findByPk(id, {
@@ -14,6 +14,58 @@ const findPostOrThrow = async (id) => {
 
     return post;
 };
+
+// export const getPosts = async (userId) => {
+//     const posts = await Post.findAll({
+//         include: [
+//             {
+//                 model: User,
+//                 as: 'user',
+//                 attributes: ['id', 'firstName', 'lastName'],
+//             },
+//             {
+//                 model: Comment,
+//                 as: 'comments',
+//                 include: [
+//                     {
+//                         model: User,
+//                         as: 'user',
+//                         attributes: ['id', 'firstName', 'lastName'],
+//                     },
+//                 ],
+//             },
+//             {
+//                 model: PostLike,
+//                 as: 'likes',
+//                 attributes: ['userId'],
+//             }
+//         ],
+//     });
+//
+//     const user = await User.findByPk(userId, {
+//         include: {
+//             model: User,
+//             as: 'Following',
+//             attributes: ['id']
+//         },
+//     });
+//
+//     const followingIds = user.Following.map(f => f.id);
+//
+//     return posts.map(post => {
+//         const jsonPost = post.toJSON();
+//
+//         const likeUserIds = jsonPost.likes.map(like => like.userId);
+//
+//         jsonPost.user.isFollowing = followingIds.includes(post.userId);
+//         jsonPost.likesCount = likeUserIds.length;
+//         jsonPost.isLiked = likeUserIds.includes(userId);
+//
+//         delete jsonPost.likes;
+//
+//         return jsonPost;
+//     });
+// };
 
 export const getPosts = async (userId) => {
     const posts = await Post.findAll({
@@ -32,21 +84,27 @@ export const getPosts = async (userId) => {
                         as: 'user',
                         attributes: ['id', 'firstName', 'lastName'],
                     },
+                    {
+                        model: CommentLike,
+                        as: 'likes',
+                        attributes: ['userId'],
+                    },
                 ],
             },
             {
                 model: PostLike,
                 as: 'likes',
                 attributes: ['userId'],
-            }
+            },
         ],
     });
 
+    // Получаем подписки текущего пользователя
     const user = await User.findByPk(userId, {
         include: {
             model: User,
             as: 'Following',
-            attributes: ['id']
+            attributes: ['id'],
         },
     });
 
@@ -55,13 +113,23 @@ export const getPosts = async (userId) => {
     return posts.map(post => {
         const jsonPost = post.toJSON();
 
-        const likeUserIds = jsonPost.likes.map(like => like.userId);
-
+        const postLikeUserIds = jsonPost.likes.map(like => like.userId);
+        jsonPost.likesCount = postLikeUserIds.length;
+        jsonPost.isLiked = postLikeUserIds.includes(userId);
         jsonPost.user.isFollowing = followingIds.includes(post.userId);
-        jsonPost.likesCount = likeUserIds.length;
-        jsonPost.isLiked = likeUserIds.includes(userId);
-
         delete jsonPost.likes;
+
+        if (jsonPost.comments && Array.isArray(jsonPost.comments)) {
+            jsonPost.comments = jsonPost.comments.map(comment => {
+                const commentLikeUserIds = (comment.likes || []).map(like => like.userId);
+
+                return {
+                    ...comment,
+                    likesCount: commentLikeUserIds.length,
+                    isLiked: commentLikeUserIds.includes(userId),
+                };
+            });
+        }
 
         return jsonPost;
     });

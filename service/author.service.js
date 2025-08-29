@@ -1,4 +1,4 @@
-import {User, Post, Comment, PostLike} from "../models/models.js";
+import {User, Post, Comment, PostLike, CommentLike} from "../models/models.js";
 
 export const getAuthorWithPosts = async (userId, currentUserId) => {
     const author = await User.findByPk(userId, {
@@ -15,6 +15,11 @@ export const getAuthorWithPosts = async (userId, currentUserId) => {
                                 model: User,
                                 as: 'user',
                                 attributes: ['id', 'firstName', 'lastName']
+                            },
+                            {
+                                model: CommentLike,
+                                as: 'likes',
+                                attributes: ['userId'],
                             }
                         ]
                     },
@@ -33,6 +38,11 @@ export const getAuthorWithPosts = async (userId, currentUserId) => {
                         model: Post,
                         as: 'post',
                         attributes: ['id', 'title']
+                    },
+                    {
+                        model: CommentLike,
+                        as: 'likes',
+                        attributes: ['userId'],
                     }
                 ]
             }
@@ -57,21 +67,39 @@ export const getAuthorWithPosts = async (userId, currentUserId) => {
         throw new Error('Current user does not exist');
     }
 
-    const followingIds = currentUser?.Following.map(f => f.id) || [];
+    const followingIds = currentUser.Following.map(f => f.id);
 
     author.dataValues.isFollowing = followingIds.includes(Number(userId));
 
     author.posts = author.posts.map(post => {
-        const likeUserIds = post.likes.map(like => like.userId);
-        post.dataValues.likesCount = likeUserIds.length;
+        const postLikeUserIds = post.likes.map(like => like.userId);
+        post.dataValues.likesCount = postLikeUserIds.length;
+        post.dataValues.isLiked = postLikeUserIds.includes(Number(currentUserId));
         post.dataValues.user = {
-            isFollowing: author.dataValues.isFollowing
+            isFollowing: author.dataValues.isFollowing,
         };
-        post.dataValues.isLiked = likeUserIds.includes(Number(currentUserId));
         delete post.dataValues.likes;
+
+        if (post.comments && Array.isArray(post.comments)) {
+            post.comments = post.comments.map(comment => {
+                const commentLikeUserIds = (comment.likes || []).map(like => like.userId);
+                comment.dataValues.likesCount = commentLikeUserIds.length;
+                comment.dataValues.isLiked = commentLikeUserIds.includes(Number(currentUserId));
+                return comment;
+            });
+        }
 
         return post;
     });
+
+    if (author.comments && Array.isArray(author.comments)) {
+        author.comments = author.comments.map(comment => {
+            const commentLikeUserIds = (comment.likes || []).map(like => like.userId);
+            comment.dataValues.likesCount = commentLikeUserIds.length;
+            comment.dataValues.isLiked = commentLikeUserIds.includes(Number(currentUserId));
+            return comment;
+        });
+    }
 
     return author;
 };

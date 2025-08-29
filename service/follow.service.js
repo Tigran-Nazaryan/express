@@ -1,4 +1,4 @@
-import {Comment, Follow, Post, PostLike, User} from '../models/models.js';
+import {Comment, CommentLike, Follow, Post, PostLike, User} from '../models/models.js';
 
 export async function createFollow(followerId, followingId) {
     if (followerId === followingId) {
@@ -59,31 +59,47 @@ export async function getFollowedUsersPosts(followerId) {
                         as: 'user',
                         attributes: ['id', 'firstName', 'lastName'],
                     },
+                    {
+                        model: CommentLike,
+                        as: 'likes',
+                        attributes: ['userId'],
+                    },
                 ],
             },
             {
                 model: PostLike,
                 as: 'likes',
                 attributes: ['userId'],
-            }
+            },
         ],
     });
 
     return posts.map(post => {
         const jsonPost = post.toJSON();
 
-        const likeUserIds = jsonPost.likes.map(like => like.userId);
-
-        jsonPost.likesCount = likeUserIds.length;
-        jsonPost.isLiked = likeUserIds.includes(followerId);
-
+        const postLikeUserIds = jsonPost.likes.map(like => like.userId);
+        jsonPost.likesCount = postLikeUserIds.length;
+        jsonPost.isLiked = postLikeUserIds.includes(followerId);
         delete jsonPost.likes;
 
         jsonPost.user.isFollowing = true;
 
+        if (jsonPost.comments && Array.isArray(jsonPost.comments)) {
+            jsonPost.comments = jsonPost.comments.map(comment => {
+                const commentLikeUserIds = (comment.likes || []).map(like => like.userId);
+
+                return {
+                    ...comment,
+                    likesCount: commentLikeUserIds.length,
+                    isLiked: commentLikeUserIds.includes(followerId),
+                };
+            });
+        }
+
         return jsonPost;
     });
 }
+
 
 export async function checkIfFollowing(followerId, followingId) {
     const follow = await Follow.findOne({
