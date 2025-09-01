@@ -1,4 +1,5 @@
-import {Post, User, PostLike, Comment, CommentLike} from "../models/models.js";
+import {Comment, CommentLike, Post, PostLike, User} from "../models/models.js";
+import {Op} from 'sequelize';
 
 const findPostOrThrow = async (id) => {
     const post = await Post.findByPk(id, {
@@ -15,13 +16,42 @@ const findPostOrThrow = async (id) => {
     return post;
 };
 
-export const getPosts = async (userId, search = '') => {
-    const allPosts = await Post.findAll({
+export const getPosts = async (userId, search = '', page = 0, size = 10) => {
+    const limit = size;
+    const safePage = Math.max(1, parseInt(page, 10) || 1);
+    const offset = (safePage - 1) * size;
+
+    const user = await User.findByPk(userId, {
+        include: {
+            model: User,
+            as: 'Following',
+            attributes: ['id'],
+        },
+    });
+
+    const followingIds = user?.Following?.map(f => f.id) || [];
+
+    const postUserWhere = search
+        ? {
+            [Op.or]: [
+                { title: { [Op.iLike]: `%${search}%` } },
+                { body: { [Op.iLike]: `%${search}%` } },
+                { '$user.firstName$': { [Op.iLike]: `%${search}%` } },
+                { '$user.lastName$': { [Op.iLike]: `%${search}%` } },
+            ],
+        }
+        : {};
+
+    const { count, rows: posts } = await Post.findAndCountAll({
+        where: postUserWhere,
+        limit,
+        offset,
         include: [
             {
                 model: User,
                 as: 'user',
                 attributes: ['id', 'firstName', 'lastName'],
+                required: true,
             },
             {
                 model: Comment,
@@ -45,36 +75,10 @@ export const getPosts = async (userId, search = '') => {
                 attributes: ['userId'],
             },
         ],
+        distinct: true,
     });
 
-    const user = await User.findByPk(userId, {
-        include: {
-            model: User,
-            as: 'Following',
-            attributes: ['id'],
-        },
-    });
-
-    const followingIds = user.Following.map(f => f.id);
-
-    const filteredPosts = search
-        ? allPosts.filter(post => {
-            const title = post.title || '';
-            const body = post.body || '';
-            const firstName = post.user?.firstName || '';
-            const lastName = post.user?.lastName || '';
-            const fullName = `${firstName} ${lastName}`.toLowerCase();
-            const lowerSearch = search.toLowerCase();
-
-            return (
-                title.toLowerCase().includes(lowerSearch) ||
-                body.toLowerCase().includes(lowerSearch) ||
-                fullName.includes(lowerSearch)
-            );
-        })
-        : allPosts;
-
-    return filteredPosts.map(post => {
+    const formattedPosts = posts.map(post => {
         const jsonPost = post.toJSON();
 
         const postLikeUserIds = jsonPost.likes.map(like => like.userId);
@@ -97,6 +101,13 @@ export const getPosts = async (userId, search = '') => {
 
         return jsonPost;
     });
+
+    return {
+        posts: formattedPosts,
+        totalItems: count,
+        totalPages: Math.ceil(count / size),
+        currentPage: page,
+    };
 };
 
 const getPostById = async (id) => {
@@ -157,8 +168,7 @@ const likePost = async (postId, userId) => {
         throw new Error("Post already liked by this user");
     }
 
-    const like = await PostLike.create({postId, userId});
-    return like;
+    return await PostLike.create({postId, userId});
 }
 
 const unLikePost = async (postId, userId) => {

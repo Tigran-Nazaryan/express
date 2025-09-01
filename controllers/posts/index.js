@@ -4,16 +4,20 @@ import postService from "../../service/post-service.js";
 export const getAllPosts = async (req, res) => {
     try {
         const userId = req.user.id;
-        const search = req.query.search || "";
         if (!userId) {
-            return res.status(400).json({error: 'userId is required'});
+            return res.status(400).json({ error: 'userId is required' });
         }
 
-        const posts = await postService.getPosts(userId, search);
-        res.status(200).json(posts);
+        const search = req.query.search || '';
+        const page = parseInt(req.query.page) || 0;
+        const size = parseInt(req.query.size) || 10;
+
+        const result = await postService.getPosts(userId, search, page, size);
+
+        res.status(200).json(result);
     } catch (err) {
-        console.error("Error fetching posts with comments:", err);
-        res.status(500).json({error: "Server error"});
+        console.error("Error fetching posts:", err);
+        res.status(500).json({ error: "Server error" });
     }
 };
 
