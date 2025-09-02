@@ -1,5 +1,5 @@
 import {Comment, CommentLike, Post, PostLike, User} from "../models/models.js";
-import {Op} from 'sequelize';
+import {col, fn, Op, where} from 'sequelize';
 
 const findPostOrThrow = async (id) => {
     const post = await Post.findByPk(id, {
@@ -36,8 +36,23 @@ export const getPosts = async (userId, search = '', page = 0, size = 10) => {
             [Op.or]: [
                 { title: { [Op.iLike]: `%${search}%` } },
                 { body: { [Op.iLike]: `%${search}%` } },
-                { '$user.firstName$': { [Op.iLike]: `%${search}%` } },
-                { '$user.lastName$': { [Op.iLike]: `%${search}%` } },
+                {
+                    [Op.or]: [
+                        { '$user.firstName$': { [Op.iLike]: `%${search}%` } },
+                        { '$user.lastName$': { [Op.iLike]: `%${search}%` } },
+                        where(
+                            fn(
+                                'concat',
+                                fn('lower', col('user.firstName')),
+                                ' ',
+                                fn('lower', col('user.lastName'))
+                            ),
+                            {
+                                [Op.iLike]: `%${search}%`
+                            }
+                        )
+                    ]
+                }
             ],
         }
         : {};
