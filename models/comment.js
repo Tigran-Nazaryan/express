@@ -17,6 +17,10 @@ export default (sequelize, DataTypes) => {
             type: DataTypes.TEXT,
             allowNull: false,
         },
+        parentId: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
     }, {
         tableName: 'Comments',
         timestamps: true,
@@ -26,6 +30,8 @@ export default (sequelize, DataTypes) => {
         Comment.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
         Comment.belongsTo(models.Post, { foreignKey: 'postId', as: 'post' });
         Comment.hasMany(models.CommentLike, { foreignKey: 'commentId', as: 'likes' });
+        Comment.belongsTo(models.Comment, { foreignKey: 'parentId', as: 'parent' });
+        Comment.hasMany(models.Comment, { foreignKey: 'parentId', as: 'replies' });
     };
 
     return Comment;
