@@ -16,10 +16,8 @@ const findPostOrThrow = async (id) => {
     return post;
 };
 
-export const getPosts = async (userId, search = '', page = 0, size = 10) => {
-    const limit = size;
-    const safePage = Math.max(1, parseInt(page, 10) || 1);
-    const offset = (safePage - 1) * size;
+export const getPosts = async (userId, search = '', page = 1, limit = 10) => {
+    const offset = (page - 1) * limit;
 
     const user = await User.findByPk(userId, {
         include: {
@@ -27,7 +25,7 @@ export const getPosts = async (userId, search = '', page = 0, size = 10) => {
             as: 'Following',
             attributes: ['id'],
         },
-    });
+    }); // TODO raw: true?
 
     const followingIds = user?.Following?.map(f => f.id) || [];
 
@@ -90,10 +88,11 @@ export const getPosts = async (userId, search = '', page = 0, size = 10) => {
                 attributes: ['userId'],
             },
         ],
+        order: [['createdAt', 'DESC']],
         distinct: true,
     });
 
-    const formattedPosts = posts.map(post => {
+    const formattedPosts = posts.map(post => { // TODO: try to get all with query above
         const jsonPost = post.toJSON();
 
         const postLikeUserIds = jsonPost.likes.map(like => like.userId);
@@ -120,7 +119,7 @@ export const getPosts = async (userId, search = '', page = 0, size = 10) => {
     return {
         posts: formattedPosts,
         totalItems: count,
-        totalPages: Math.ceil(count / size),
+        totalPages: Math.ceil(count / limit),
         currentPage: page,
     };
 };

@@ -9,10 +9,10 @@ export const getAllPosts = async (req, res) => {
         }
 
         const search = req.query.search || '';
-        const page = parseInt(req.query.page) || 0;
-        const size = parseInt(req.query.size) || 10;
+        const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+        const limit = Math.min(100, Math.max(1, parseInt(req.query.size, 10) || 10));
 
-        const result = await postService.getPosts(userId, search, page, size);
+        const result = await postService.getPosts(userId, search, page, limit);
 
         res.status(200).json(result);
     } catch (err) {

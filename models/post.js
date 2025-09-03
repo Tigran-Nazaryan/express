@@ -32,7 +32,7 @@ export default (sequelize, DataTypes) => {
         },
     }, {
         tableName: 'Posts',
-        timestamps: false,
+        timestamps: true,
     });
 
     Post.associate = (models) => {
