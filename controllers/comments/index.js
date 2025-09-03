@@ -1,11 +1,10 @@
 import * as commentService from "../../service/comments.service.js";
 
-export const createComment = async (req, res) => {
+export const  createComment = async (req, res) => {
     try {
-        const userId = req.user.id;
         const {postId, content, parentId} = req.body;
 
-        const comment = await commentService.createComment({postId, userId, content, parentId});
+        const comment = await commentService.createComment({postId, content, parentId});
 
         res.status(201).json(comment);
     } catch (error) {

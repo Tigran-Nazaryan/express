@@ -25,7 +25,7 @@ export const getPosts = async (userId, search = '', page = 1, limit = 10) => {
             as: 'Following',
             attributes: ['id'],
         },
-    }); // TODO raw: true?
+    });
 
     const followingIds = user?.Following?.map(f => f.id) || [];
 
@@ -92,7 +92,7 @@ export const getPosts = async (userId, search = '', page = 1, limit = 10) => {
         distinct: true,
     });
 
-    const formattedPosts = posts.map(post => { // TODO: try to get all with query above
+    const formattedPosts = posts.map(post => {
         const jsonPost = post.toJSON();
 
         const postLikeUserIds = jsonPost.likes.map(like => like.userId);
@@ -170,19 +170,20 @@ const deletePost = async (id) => {
 };
 
 const likePost = async (postId, userId) => {
-    const posts = await Post.findByPk(postId);
-    if (!posts) {
-        throw new Error("Post not found");
-    }
-
     const existingLike = await PostLike.findOne({
-        where: {postId, userId}
+        where: { postId, userId }
     });
+
     if (existingLike) {
         throw new Error("Post already liked by this user");
     }
 
-    return await PostLike.create({postId, userId});
+    const postExists = await Post.count({ where: { id: postId } });
+    if (!postExists) {
+        throw new Error("Post not found");
+    }
+
+    return await PostLike.create({ postId, userId });
 }
 
 const unLikePost = async (postId, userId) => {
