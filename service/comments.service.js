@@ -1,8 +1,9 @@
 import {Comment, User, CommentLike} from "../models/models.js";
 
-export const createComment = async ({postId, content, parentId}) => {
+export const createComment = async ({postId, userId, content, parentId}) => {
     const comment = await Comment.create({
         postId,
+        userId,
         content,
         parentId,
     });
