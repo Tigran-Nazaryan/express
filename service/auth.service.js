@@ -2,7 +2,7 @@ import {User} from "../models/models.js";
 import bcrypt from "bcrypt";
 import {UserDto} from "../dtos/user-dto.js";
 import {registrationSchema} from "../validations/registration.validation.js";
-import tokenService from "./token-service.js";
+import tokenService from "./token.service.js";
 import ApiError from "../exceptions/api-error.js";
 
 class AuthService {

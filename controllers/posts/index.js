@@ -1,5 +1,5 @@
 import {postSchema} from "../../validations/post.validation.js";
-import postService from "../../service/post-service.js";
+import postService from "../../service/post.service.js";
 
 export const getAllPosts = async (req, res) => {
     try {
