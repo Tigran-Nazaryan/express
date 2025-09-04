@@ -34,15 +34,23 @@ export const createPost = async (req, res) => {
     try {
         const { body, user } = req;
 
-        const { error } = postSchema.validate(body);
+        if (body.userId && body.userId !== user.id) {
+            return res.status(403).json({ error: "You cannot create a post for another user" });
+        }
+
+        const { userId, ...dataToValidate } = body;
+
+        const { error } = postSchema.validate(dataToValidate);
         if (error) return res.status(400).json({ error: error.details[0].message });
 
-        body.userId = user.id;
+        const post = await postService.createPost({
+            ...dataToValidate,
+            userId: user.id
+        });
 
-        const post = await postService.createPost(req.body);
         return res.status(201).json(post);
     } catch (e) {
-        res.status(500).json({ message: e.message });
+        return res.status(500).json({ message: e.message });
     }
 };
 
@@ -51,19 +59,33 @@ export const updatePost = async (req, res) => {
     if (error) return res.status(400).json({ error: error.details[0].message });
 
     try {
-        const post = await postService.updatePost(req.params.id, req.body);
-        return res.status(200).json(post);
+        const post = await postService.getPostById(req.params.id);
+        if (!post) return res.status(404).json({ message: 'Post not found' });
+
+        if (post.userId !== req.user.id) {
+            return res.status(403).json({ message: 'You are not allowed to update this post' });
+        }
+
+        const updatedPost = await postService.updatePost(req.params.id, req.body);
+        return res.status(200).json(updatedPost);
     } catch (error) {
-        res.status(error.message === 'Post not found' ? 404 : 500).json({ message: error.message });
+        return res.status(500).json({ message: error.message });
     }
 };
 
 export const deletePost = async (req, res) => {
     try {
+        const post = await postService.getPostById(req.params.id);
+        if (!post) return res.status(404).json({ message: 'Post not found' });
+
+        if (post.userId !== req.user.id) {
+            return res.status(403).json({ message: 'You are not allowed to delete this post' });
+        }
+
         const result = await postService.deletePost(req.params.id);
         return res.status(200).json(result);
     } catch (error) {
-        res.status(error.message === 'Post not found' ? 404 : 500).json({ message: error.message });
+        return res.status(500).json({ message: error.message });
     }
 };
 

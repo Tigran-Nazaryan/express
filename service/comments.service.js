@@ -40,6 +40,10 @@ export const commentLike = async (userId, commentId) => {
     return await CommentLike.create({userId, commentId});
 };
 
+export const getCommentById = async (id) => {
+    return await Comment.findByPk(id);
+};
+
 export const commentUnlike = async (userId, commentId) => {
     const like = await CommentLike.findOne({
         where: {userId, commentId},

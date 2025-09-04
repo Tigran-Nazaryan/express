@@ -3,15 +3,41 @@ import * as commentService from "../../service/comments.service.js";
 export const createComment = async (req, res) => {
     try {
         const userId = req.user.id;
-        const {postId, content, parentId} = req.body;
+        const { postId, content, parentId } = req.body;
 
-        const comment = await commentService.createComment({postId, userId, content, parentId});
+        if (!content || !content.trim()) {
+            return res.status(400).json({ error: "Content is required" });
+        }
+
+        if (!postId) {
+            return res.status(400).json({ error: "Post ID is required" });
+        }
+
+        if (parentId) {
+            const parentComment = await commentService.getCommentById(parentId);
+
+            if (!parentComment) {
+                return res.status(400).json({ error: "Parent comment does not exist" });
+            }
+
+            if (parentComment.postId !== postId) {
+                return res.status(400).json({ error: "Parent comment does not belong to this post" });
+            }
+        }
+
+        const comment = await commentService.createComment({
+            postId,
+            userId,
+            content,
+            parentId: parentId || null,
+        });
 
         res.status(201).json(comment);
     } catch (error) {
-        res.status(500).json({error: error.message});
+        res.status(500).json({ error: error.message });
     }
 };
+
 
 export const getCommentsByPost = async (req, res) => {
     try {
